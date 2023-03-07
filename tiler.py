@@ -89,9 +89,8 @@ def show_image(img, wait=True):
 
 # load and process the tiles
 @st.cache(suppress_st_warning=True)
-def load_tiles(path):
+def load_tiles(choose_style):
     print('Loading tiles')
-    tiles = defaultdict(list)
 
     # for path in paths:
     # if os.path.isdir(path):
@@ -112,8 +111,7 @@ def load_tiles(path):
     #         pickle.dump(tiles, f)
 
     # 这里使用预先下载好的pickle
-    name = str(path).split('\\')[-1].lstrip('gen_')
-    with open(f'./pickles/{name}_tiles.pickle', 'rb') as f:
+    with open(f'./pickles/{choose_style}_tiles.pickle', 'rb') as f:
         tiles = pickle.load(f)
 
     return tiles
@@ -234,7 +232,7 @@ def main():
     if upload_img:
         st.image(upload_img)
         if choose_style:
-            tiles = load_tiles(find_path(choose_style))
+            tiles = load_tiles(choose_style)
             st.write('It may takes a few minutes⏳')
             boxes, original_res = get_processed_image_boxes(upload_img, tiles)
             img = create_tiled_image(boxes, original_res, render=conf.RENDER)
