@@ -92,26 +92,8 @@ def show_image(img, wait=True):
 def load_tiles(choose_style):
     print('Loading tiles')
 
-    # for path in paths:
-    # if os.path.isdir(path):
-    #     for tile_name in tqdm(os.listdir(path)):
-    #         tile = read_tile_img(os.path.join(path, tile_name))
-    #         mode, rel_freq = mode_color(tile, ignore_alpha=True)
-    #         if mode is not None:
-    #             for scale in RESIZING_SCALES:
-    #                 t = resize_image(tile, scale)
-    #                 res = tuple(t.shape[:2])
-    #                 tiles[res].append({
-    #                     'tile': t,
-    #                     'mode': mode,
-    #                     'rel_freq': rel_freq
-    #                 })
-    #
-    #     with open('tiles.pickle', 'wb') as f:
-    #         pickle.dump(tiles, f)
-
     # 这里使用预先下载好的pickle
-    with open(f'./pickles/{choose_style}_tiles.pickle', 'rb') as f:
+    with open(f'./pickle/{choose_style}_tiles.pickle', 'rb') as f:
         tiles = pickle.load(f)
 
     return tiles
