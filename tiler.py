@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import os
-import sys
 from collections import defaultdict
 from tqdm import tqdm
 from multiprocessing import Pool
@@ -9,7 +8,9 @@ import math
 import pickle
 import conf
 from time import sleep
-
+import pathlib
+import emoji
+import streamlit as st
 
 # number of colors per image
 COLOR_DEPTH = conf.COLOR_DEPTH
@@ -29,7 +30,19 @@ def color_quantization(img, n_colors):
 
 
 # returns an image given its path
-def read_image(path):
+# 改动位置
+def read_upload_img(upload_img):
+    img_bytes = upload_img.getvalue()
+    img = cv2.imdecode(np.frombuffer(img_bytes, np.uint8), cv2.IMREAD_UNCHANGED)
+    # img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+    if img.shape[2] == 3:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
+    img = color_quantization(img.astype('float'), COLOR_DEPTH)
+    return img.astype('uint8')
+
+
+# 改动位置
+def read_tile_img(path):
     img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
     if img.shape[2] == 3:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
@@ -52,12 +65,12 @@ def mode_color(img, ignore_alpha=False):
             if len(x) < 4 or ignore_alpha or x[3] != 0:
                 counter[tuple(x[:3])] += 1
             else:
-                counter[(-1,-1,-1)] += 1
+                counter[(-1, -1, -1)] += 1
             total += 1
 
     if total > 0:
         mode_color = max(counter, key=counter.get)
-        if mode_color == (-1,-1,-1):
+        if mode_color == (-1, -1, -1):
             return None, None
         else:
             return mode_color, counter[mode_color] / total
@@ -75,32 +88,33 @@ def show_image(img, wait=True):
 
 
 # load and process the tiles
-def load_tiles(paths):
+@st.cache(suppress_st_warning=True)
+def load_tiles(path):
     print('Loading tiles')
     tiles = defaultdict(list)
 
-    for path in paths:
-        if os.path.isdir(path):
-            for tile_name in tqdm(os.listdir(path)):
-                tile = read_image(os.path.join(path, tile_name))
-                mode, rel_freq = mode_color(tile, ignore_alpha=True)
-                if mode is not None:
-                    for scale in RESIZING_SCALES:
-                        t = resize_image(tile, scale)
-                        res = tuple(t.shape[:2])
-                        tiles[res].append({
-                            'tile': t,
-                            'mode': mode,
-                            'rel_freq': rel_freq
-                        })
+    # for path in paths:
+    # if os.path.isdir(path):
+    #     for tile_name in tqdm(os.listdir(path)):
+    #         tile = read_tile_img(os.path.join(path, tile_name))
+    #         mode, rel_freq = mode_color(tile, ignore_alpha=True)
+    #         if mode is not None:
+    #             for scale in RESIZING_SCALES:
+    #                 t = resize_image(tile, scale)
+    #                 res = tuple(t.shape[:2])
+    #                 tiles[res].append({
+    #                     'tile': t,
+    #                     'mode': mode,
+    #                     'rel_freq': rel_freq
+    #                 })
+    #
+    #     with open('tiles.pickle', 'wb') as f:
+    #         pickle.dump(tiles, f)
 
-            with open('tiles.pickle', 'wb') as f:
-                pickle.dump(tiles, f)
-
-        # load pickle with tiles (one file only)
-        else:
-            with open(path, 'rb') as f:
-                tiles = pickle.load(f)
+    # 这里使用预先下载好的pickle
+    name = str(path).split('\\')[-1].lstrip('gen_')
+    with open(f'./pickles/{name}_tiles.pickle', 'rb') as f:
+        tiles = pickle.load(f)
 
     return tiles
 
@@ -116,8 +130,8 @@ def image_boxes(img, res):
     for y in range(0, img.shape[0], shift[1]):
         for x in range(0, img.shape[1], shift[0]):
             boxes.append({
-                'img': img[y:y+res[0], x:x+res[1]],
-                'pos': (x,y)
+                'img': img[y:y + res[0], x:x + res[1]],
+                'pos': (x, y)
             })
 
     return boxes
@@ -127,13 +141,13 @@ def image_boxes(img, res):
 def color_distance(c1, c2):
     c1_int = [int(x) for x in c1]
     c2_int = [int(x) for x in c2]
-    return math.sqrt((c1_int[0] - c2_int[0])**2 + (c1_int[1] - c2_int[1])**2 + (c1_int[2] - c2_int[2])**2)
+    return math.sqrt((c1_int[0] - c2_int[0]) ** 2 + (c1_int[1] - c2_int[1]) ** 2 + (c1_int[2] - c2_int[2]) ** 2)
 
 
 # returns the most similar tile to a box (in terms of color)
 def most_similar_tile(box_mode_freq, tiles):
     if not box_mode_freq[0]:
-        return (0, np.zeros(shape=tiles[0]['tile'].shape))
+        return 0, np.zeros(shape=tiles[0]['tile'].shape)
     else:
         min_distance = None
         min_tile_img = None
@@ -146,9 +160,10 @@ def most_similar_tile(box_mode_freq, tiles):
 
 
 # builds the boxes and finds the best tile for each one
-def get_processed_image_boxes(image_path, tiles):
+@st.cache(suppress_st_warning=True)
+def get_processed_image_boxes(upload_img, tiles):
     print('Getting and processing boxes')
-    img = read_image(image_path)
+    img = read_upload_img(upload_img)
     pool = Pool(POOL_SIZE)
     all_boxes = []
 
@@ -180,6 +195,7 @@ def place_tile(img, box):
 
 
 # tiles the image
+@st.cache(suppress_st_warning=True)
 def create_tiled_image(boxes, res, render=False):
     print('Creating tiled image')
     img = np.zeros(shape=(res[0], res[1], 4), dtype=np.uint8)
@@ -193,30 +209,36 @@ def create_tiled_image(boxes, res, render=False):
     return img
 
 
+# 改动位置
+def find_path(tilesname):
+    start = pathlib.Path(r'./tiles')
+    for i in start.iterdir():
+        for j in i.iterdir():
+            if j.is_dir() and tilesname in str(j):
+                return j
+
+
+# 提前通过find_path类似的方法得到下面的字典
+tiles_map = {'at': 'gen_at', 'circle_100': 'gen_circle_100', 'circle_200': 'gen_circle_200', 'clip': 'gen_clip',
+             'heart': 'gen_heart', 'lego_h': 'gen_lego_h', 'lego_v': 'gen_lego_v', 'line_h': 'gen_line_h',
+             'line_v': 'gen_line_v', 'minecraft': 'gen_mini', 'plus': 'gen_plus', 'times': 'gen_times',
+             'wave': 'gen_wave'}
+
+
 # main
 def main():
-    if len(sys.argv) > 1:
-        image_path = sys.argv[1]
-    else:
-        image_path = conf.IMAGE_TO_TILE
-
-    if len(sys.argv) > 2:
-        tiles_paths = sys.argv[2:]
-    else:
-        tiles_paths = conf.TILES_FOLDER.split(' ')
-
-    if not os.path.exists(image_path):
-        print('Image not found')
-        exit(-1)
-    for path in tiles_paths:
-        if not os.path.exists(path):
-            print('Tiles folder not found')
-            exit(-1)
-
-    tiles = load_tiles(tiles_paths)
-    boxes, original_res = get_processed_image_boxes(image_path, tiles)
-    img = create_tiled_image(boxes, original_res, render=conf.RENDER)
-    cv2.imwrite(conf.OUT, img)
+    st.set_page_config(page_title="马赛克图片" + emoji.emojize(':rainbow:'))
+    st.balloons()
+    upload_img = st.file_uploader('选择需要加工的图片' + emoji.emojize(':camera:'))
+    choose_style = st.selectbox('Select the style you want to process:penguin:', tiles_map.keys())
+    if upload_img:
+        st.image(upload_img)
+        if choose_style:
+            tiles = load_tiles(find_path(choose_style))
+            st.write('It may takes a few minutes⏳')
+            boxes, original_res = get_processed_image_boxes(upload_img, tiles)
+            img = create_tiled_image(boxes, original_res, render=conf.RENDER)
+            st.image(img, caption=f'{choose_style} style output' + emoji.emojize(':lollipop:'), channels='BGR')
 
 
 if __name__ == "__main__":
