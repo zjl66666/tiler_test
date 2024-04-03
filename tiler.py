@@ -235,8 +235,9 @@ def main():
     st.balloons()
     upload_img = st.file_uploader('选择需要加工的图片' + emoji.emojize(':camera:'))
     choose_style = st.selectbox('Select the style you want to process:penguin:', tiles_map.keys())
-    st.sidebar.image('./images_example/cake_circles.png', caption='样例图片1')
-    st.sidebar.image('./images_example/github_logo_at.png', caption='样例图片2')
+    st.sidebar.image('./images_example/cake_circles.png', caption='cicle蛋糕')
+    st.sidebar.image('./images_example/github_logo_at.png', caption='atGithub标志')
+    st.sidebar.image('./images_example/starry_night_circles_25x25.png', caption='circle星空')
     if upload_img:
         st.image(upload_img)
         if choose_style:
