@@ -92,7 +92,6 @@ def show_image(img, wait=True):
 
 # load and process the tiles
 # 加载和处理磁贴
-@st.cache_data
 def load_tiles(path):
     print('Loading tiles')
     tiles = defaultdict(list)
@@ -150,7 +149,6 @@ def most_similar_tile(box_mode_freq, tiles):
 
 
 # builds the boxes and finds the best tile for each one
-@st.cache_data
 def get_processed_image_boxes(upload_img, tiles):
     print('Getting and processing boxes')
     img = read_upload_img(upload_img)
@@ -186,7 +184,6 @@ def place_tile(img, box):
 
 
 # tiles the image平铺图像
-@st.cache_data
 def create_tiled_image(boxes, res, render=False):
     print('Creating tiled image')
     img = np.zeros(shape=(res[0], res[1], 4), dtype=np.uint8)
