@@ -92,12 +92,12 @@ def show_image(img, wait=True):
 
 # load and process the tiles
 # 加载和处理磁贴
-def load_tiles(path):
+def load_tiles(name):
     print('Loading tiles')
     tiles = defaultdict(list)
 
     # 这里使用预先下载好的pickle
-    name = str(path).split('\\')[-1].lstrip('gen_')
+    # name = str(path).split('\\')[-1].lstrip('gen_')
     with open(f'./pickle/{name}.pickle', 'rb') as f:
         tiles = pickle.load(f)
 
