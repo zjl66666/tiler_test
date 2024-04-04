@@ -221,17 +221,17 @@ def example_tile():
     for tiler in start.iterdir():
         eval(f'c{i}').image(r'./tiles_example/' + str(tiler.name), caption=str(tiler.name.split('.')[0]))
         i += 1
-info1 = """Tiler 是一种使用各种其他较小图像（图块）创建图像的工具。它与其他马赛克工具不同，因为它可以适应多种形状和尺寸的瓷砖（即不限于正方形）。"""
-info2 = """图像可以用圆形、线条、波浪、十字绣、乐高积木、我的世界积木、回形针、字母......构建出无限的可能性！"""
+        
+info = """这是一种使用各种其他较小图像（图块）创建图像的工具。它与其他马赛克工具不同，因为它可以适应多种形状和尺寸的瓷砖（即不限于正方形）。🦄"""
 # main
 def main():
     st.set_page_config(page_title="马赛克图片" + emoji.emojize(':rainbow:'))
-    st.title('马赛克图片' + emoji.emojize(':rainbow:'))
-    st.subheader(info1)
-    st.subheader(info2)
+    st.subheader('马赛克风格图片' + emoji.emojize(':rainbow:'))
+    st.markdown(f'### {info}')
     st.balloons()
-    upload_img = st.file_uploader('选择需要加工的图片' + emoji.emojize(':camera:'))
-    choose_style = st.selectbox('Select the style you want to process:penguin:', tiles_map.keys())
+    st.markdown('#### 选择需要加工的图片📸')
+    upload_img = st.file_uploader(label='点击下方上传图片')
+    choose_style = st.selectbox('选择马赛克的风格🎲', tiles_map.keys())
     st.sidebar.header('样例图片')
     st.sidebar.image('./images_example/starry_night_circles_25x25.png', caption='circle星空')
     st.sidebar.image('./images_example/cake_circles.png', caption='cicle蛋糕')
@@ -246,6 +246,8 @@ def main():
             img = create_tiled_image(boxes, original_res, render=conf.RENDER)
             img = cv2.cvtColor(img,cv2.COLOR_BGRA2RGBA)
             st.image(img, caption=f'{choose_style} style output' + emoji.emojize(':lollipop:'))
+            st.markdown('#### 鼠标右键点击图片，选择"另存为"即可保存')
+            st.caption("注：尽量选择'另存为'方式保存图片，'复制图片'在某些情况下会发生编码错误")
 
 
 if __name__ == "__main__":
