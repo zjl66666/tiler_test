@@ -244,6 +244,7 @@ def main():
             st.write('It may takes a few minutes⏳请耐心等待')
             boxes, original_res = get_processed_image_boxes(upload_img, tiles)
             img = create_tiled_image(boxes, original_res, render=conf.RENDER)
+            img = cv2.cvtColor(img,cv2.COLOR_BGRA2RGBA)
             st.image(img, caption=f'{choose_style} style output' + emoji.emojize(':lollipop:'))
 
 
