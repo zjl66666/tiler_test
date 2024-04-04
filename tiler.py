@@ -243,7 +243,7 @@ def main():
             st.write('It may takes a few minutes⏳请耐心等待')
             boxes, original_res = get_processed_image_boxes(upload_img, tiles)
             img = create_tiled_image(boxes, original_res, render=conf.RENDER)
-            st.image(img, caption=f'{choose_style} style output' + emoji.emojize(':lollipop:'), channels='BGR')
+            st.image(img, caption=f'{choose_style} style output' + emoji.emojize(':lollipop:'))
     example_tile()
 
 
