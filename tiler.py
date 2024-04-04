@@ -236,6 +236,7 @@ def main():
     st.sidebar.image('./images_example/starry_night_circles_25x25.png', caption='circle星空')
     st.sidebar.image('./images_example/cake_circles.png', caption='cicle蛋糕')
     st.sidebar.image('./images_example/github_logo_at.png', caption='atGithub标志')
+    example_tile()
     if upload_img:
         st.image(upload_img)
         if choose_style:
@@ -244,7 +245,6 @@ def main():
             boxes, original_res = get_processed_image_boxes(upload_img, tiles)
             img = create_tiled_image(boxes, original_res, render=conf.RENDER)
             st.image(img, caption=f'{choose_style} style output' + emoji.emojize(':lollipop:'))
-    example_tile()
 
 
 if __name__ == "__main__":
