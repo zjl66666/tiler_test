@@ -25,7 +25,7 @@ OVERLAP_TILES = False
 # render image as its being built
 RENDER = False
 # multiprocessing pool size
-POOL_SIZE = 8
+POOL_SIZE = 4
 
 # out file name
 OUT = 'out.png'
