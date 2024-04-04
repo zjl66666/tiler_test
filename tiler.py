@@ -98,7 +98,7 @@ def load_tiles(path):
 
     # 这里使用预先下载好的pickle
     name = str(path).split('\\')[-1].lstrip('gen_')
-    with open(f'./pickle/{name}_tiles.pickle', 'rb') as f:
+    with open(f'./pickle/{name}.pickle', 'rb') as f:
         tiles = pickle.load(f)
 
     return tiles
