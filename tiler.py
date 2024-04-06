@@ -141,6 +141,7 @@ def most_similar_tile(box_mode_freq, tiles):
         min_distance = None
         min_tile_img = None
         for t in tiles:
+            # 这里看出如果box只有一种颜色，大小为3*3，那么同色的1*1tile和2*2，3*3的tile算出的dist一样
             dist = (1 + color_distance(box_mode_freq[0], t['mode'])) / box_mode_freq[1]
             if min_distance is None or dist < min_distance:
                 min_distance = dist
@@ -154,7 +155,8 @@ def get_processed_image_boxes(upload_img, tiles):
     img = read_upload_img(upload_img)
     pool = Pool(POOL_SIZE)
     all_boxes = []
-    # ts
+    # 这里的排序和反转可能是为了优先处理分辨率较大即更大的图像。这样做的原因可能是因为
+    # 处理大图像可以更快地覆盖更多的区域，然后再用小图像填充剩余的空白区域。这样的处理顺序可能会使最终的拼图效果更好
     for res, ts in tqdm(sorted(tiles.items(), reverse=True)):
         boxes = image_boxes(img, res)
         modes = pool.map(mode_color, [x['img'] for x in boxes])
@@ -179,6 +181,7 @@ def place_tile(img, box):
     img_box = img[p1[0]:p2[0], p1[1]:p2[1]]
     mask = box['tile'][:, :, 3] != 0
     mask = mask[:img_box.shape[0], :img_box.shape[1]]
+    # 如果允许重叠，或者img_box区域之前没有铺设过tile，则铺设新的tile
     if OVERLAP_TILES or not np.any(img_box[mask]):
         img_box[mask] = box['tile'][:img_box.shape[0], :img_box.shape[1], :][mask]
 
@@ -187,7 +190,8 @@ def place_tile(img, box):
 def create_tiled_image(boxes, res, render=False):
     print('Creating tiled image')
     img = np.zeros(shape=(res[0], res[1], 4), dtype=np.uint8)
-
+    # 如果dist相同，由于这里sorted还是保持相对顺序，大的比如3*3的tile比1*1的更先放入boxes中，会先铺设大的tile，
+    # 这样在dist相等情况下优先铺设大的tile，避免全部使用小的tile，使生成的图像更加错落有致
     for box in tqdm(sorted(boxes, key=lambda x: x['min_dist'], reverse=OVERLAP_TILES)):
         place_tile(img, box)  # 在图像中放置一个瓷砖
         if render:
