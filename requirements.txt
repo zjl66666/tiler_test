@@ -4,4 +4,4 @@ numpy==1.23.5
 opencv_python_headless==4.5.4.60
 streamlit==1.19.0
 tqdm==4.64.1
-altair.vegelite.v4
+altair==4.2.2
