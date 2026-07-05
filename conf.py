@@ -17,7 +17,7 @@ ROTATIONS = [0]
 COLOR_DEPTH = 32
 # tiles scales (1 = default resolution)
 # RESIZING_SCALES = [0.5,0.4,0.3,0.2,0.1] 错落有致
-RESIZING_SCALES = [0.1,0.1,0.1,0.1,0.1]
+RESIZING_SCALES = [0.2,0.2,0.2,0.2,0.2]
 # number of pixels shifted to create each box (tuple with (x,y))
 # if value is None, shift will be done accordingly to tiles dimensions
 PIXEL_SHIFT = (10,10)
