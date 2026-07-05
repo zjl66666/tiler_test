@@ -157,7 +157,7 @@ def get_processed_image_boxes(upload_img, tiles):
     all_boxes = []
     # 这里的排序和反转可能是为了优先处理分辨率较大即更大的图像。这样做的原因可能是因为
     # 处理大图像可以更快地覆盖更多的区域，然后再用小图像填充剩余的空白区域。这样的处理顺序可能会使最终的拼图效果更好
-    for res, ts in tqdm(sorted(tiles.items(), reverse=True)):
+    for res, ts in tqdm(sorted(tiles.items(), reverse=False)):
         boxes = image_boxes(img, res)
         modes = pool.map(mode_color, [x['img'] for x in boxes])
         # pool.starmap()函数的作用和map()函数类似，区别在于map()函数会将参数按照顺序传递给函数，而starmap()函数会将参数解包后传递给函数
